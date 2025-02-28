@@ -3,10 +3,13 @@ import {
   AppBar, Toolbar, Typography, IconButton, Avatar, Box, Drawer, List, ListItem,
   ListItemIcon, ListItemText, Button, Divider
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../redux/actions/authActions";
+import { useLocation, useNavigate } from "react-router-dom";
+import { addActivity, logout } from "../redux/actions/authActions";
 import { useDispatch } from "react-redux";
-import { Menu as MenuIcon, Dashboard, ShoppingCart, Settings, ExitToApp, Home } from "@mui/icons-material"; // Updated icon imports
+import { Menu as MenuIcon, Dashboard, ShoppingCart, ExitToApp, Home } from "@mui/icons-material"; // Updated icon imports
+import Inventory2Icon from '@mui/icons-material/Inventory2';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+
 
 const drawerWidth = 240;
 
@@ -14,19 +17,25 @@ const Navbar = ({ role }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation(); // Get current path
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userData");
-    dispatch(logout());  // Assuming you have a logout action
+    try {
+      localStorage.removeItem("userData");
+      dispatch(logout());  // Assuming you have a logout action
 
-    // Delay the navigation to ensure state update happens first
-    setTimeout(() => {
-      navigate("/login");
-    }, 10);
+      // Delay the navigation to ensure state update happens first
+      setTimeout(() => {
+        navigate("/login");
+      }, 10);
+      dispatch(addActivity("Admin logged out"));
+    } catch (error) {
+      console.log("error occurs while logout", error);
+    }
   };
 
 
@@ -35,8 +44,8 @@ const Navbar = ({ role }) => {
       ? [
         { text: "Dashboard", icon: <Dashboard />, path: "/admin-dashboard" },
         { text: "Products", icon: <ShoppingCart />, path: "/products" },
-        { text: "Inventory Management", icon: <Settings />, path: "/inventory" },
-        {text: "Activity", icon: <Settings />, path: "/ActivityLogs"}
+        { text: "Inventory Management", icon: <Inventory2Icon />, path: "/inventory" },
+        { text: "Activity", icon: <StorefrontIcon />, path: "/ActivityLogs" }
       ]
       : [
         { text: "Home", icon: <Home />, path: "/" },
@@ -56,9 +65,18 @@ const Navbar = ({ role }) => {
       <Divider />
       <List>
         {menuItems.map((item) => (
-          <ListItem button key={item.text} onClick={() => navigate(item.path)} sx={{ padding: 2 }}>
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
+          <ListItem
+            button
+            key={item.text}
+            onClick={() => navigate(item.path)}
+            sx={{
+              backgroundColor: location.pathname === item.path ? "rgba(0, 0, 0, 0.1)" : "inherit",
+            }}
+          >
+            <ListItemIcon>
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText primary={item.text} sx={{ fontWeight: location.pathname === item.path ? "bold" : "normal" }} />
           </ListItem>
         ))}
       </List>
@@ -72,7 +90,7 @@ const Navbar = ({ role }) => {
       <Drawer
         variant="permanent"
         sx={{
-          display: { xs: "none", md: "block" },
+          display: { xs: "none", md: "block", zIndex:0 },
           width: drawerWidth,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: "border-box" },

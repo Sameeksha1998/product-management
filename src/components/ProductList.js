@@ -26,6 +26,7 @@ import ProductView from "./ProductView.js";
 import Notification from "./Notification.js";
 import useDebounce from "../hooks/useDebounce.js";
 import useAuth from "../hooks/useAuth.js";
+import { addActivity } from "../redux/actions/authActions.js";
 
 const ProductTable = () => {
   const { products, loading, error } = useSelector((state) => state.products);
@@ -47,6 +48,8 @@ const ProductTable = () => {
   const { role } = useAuth();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const debouncedFilter = useDebounce(filter, 500); // Debounce delay set to 500ms
+ 
+
 
   const handleViewClick = (product) => {
     setSelectedProduct(product);
@@ -58,7 +61,10 @@ const ProductTable = () => {
   }, [dispatch]);
 
   const handleDeleteConfirm = (id) => {
+    
     dispatch(removeProduct(id));
+    dispatch(addActivity(`Product deleted: ${id}`));
+
   };
 
   const handleDeleteClick = (id) => {

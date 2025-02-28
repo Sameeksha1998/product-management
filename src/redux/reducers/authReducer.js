@@ -1,20 +1,12 @@
-import { LOGIN, LOGOUT } from "../constant";
+import { LOGIN, LOGOUT, ADD_ACTIVITY } from "../constant";
 
 const storedRole = localStorage.getItem("role");
+const storedLogs = localStorage.getItem("activityLogs");
 
 const initialState = {
   isAuthenticated: !!storedRole,
   role: storedRole || null,
-  logs: (() => {
-    try {
-      // Safely parse logs from localStorage
-      const logs = JSON.parse(localStorage.getItem('activityLogs'));
-      return Array.isArray(logs) ? logs : []; // Ensure it's always an array
-    } catch (error) {
-      console.error('Error parsing activity logs from localStorage:', error);
-      return []; // Return an empty array if an error occurs
-    }
-  })(),
+  logs: storedLogs ? JSON.parse(storedLogs) : [],
 };
 
 const authReducer = (state = initialState, action) => {
@@ -22,28 +14,41 @@ const authReducer = (state = initialState, action) => {
 
   switch (action.type) {
     case LOGIN:
-      localStorage.setItem("role", action.payload);
-      
-      // Preserve the logs in localStorage and state after login
-      const logs = JSON.parse(localStorage.getItem('activityLogs')) || [];
+      localStorage.setItem("role", action.payload.role);
       
       return {
         ...state,
         isAuthenticated: true,
-        role: action.payload,
-        logs:logs, // Ensure logs are retained after login
+        role: action.payload.role,
       };
 
     case LOGOUT:
+      
       localStorage.removeItem("role");
       
-      // Clear logs from state when logging out (optional)
-      return { 
-        ...state, 
-        isAuthenticated: false, 
+      return {
+        ...state,
+        isAuthenticated: false,
         role: null,
-        logs: [] // or state.logs to keep logs on logout
+        logs: [], // Clear logs on logout (optional)
       };
+
+    case ADD_ACTIVITY:
+      const newLog = {
+        user: state.role, // Store user role
+        action: action.payload.action, // Description of activity
+        timestamp: new Date().toISOString(),
+      };
+
+      const updatedLogs = [...state.logs, newLog];
+
+      localStorage.setItem("activityLogs", JSON.stringify(updatedLogs)); // Save to localStorage
+
+      return {
+        ...state,
+        logs: updatedLogs,
+      };
+
     default:
       return state;
   }

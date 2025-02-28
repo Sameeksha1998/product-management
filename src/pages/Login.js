@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { login } from "../redux/actions/authActions";
+import { addActivity, login } from "../redux/actions/authActions";
 import {
   Container,
   TextField,
@@ -39,31 +39,39 @@ const Login = () => {
 
   // Handle login
   const handleLogin = () => {
-    if (!validate()) return;
+    try {
+      if (!validate()) return;
 
-    let userData = null;
+      let userData = null;
 
-    const ADMIN_USERNAME = process.env.REACT_APP_ADMIN_USERNAME;
-    const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD;
+      const ADMIN_USERNAME = "admin"
+      const ADMIN_PASSWORD = "admin123"
 
-    if (credentials.username === ADMIN_USERNAME && credentials.password === ADMIN_PASSWORD) {
-      userData = { role: "admin", username: "admin" };
-      dispatch(login("admin"));
-      navigate("/admin-dashboard");
-    } else if (credentials.username === "user" && credentials.password === "user123") {
-      userData = { role: "user", username: "user" };
-      dispatch(login("user"));
-      navigate("/home");
-    } else {
-      setErrors({ ...errors, password: "Invalid credentials!" });
-      return;
+      if (credentials.username === ADMIN_USERNAME && credentials.password === ADMIN_PASSWORD) {
+        console.log("admin");
+        userData = { role: "admin", username: "admin" };
+        dispatch(login("admin"));
+        navigate("/admin-dashboard");
+      } else if (credentials.username === "user" && credentials.password === "user123") {
+        userData = { role: "user", username: "user" };
+        dispatch(login("user"));
+        // navigate("/home");
+      } else {
+        setErrors({ ...errors, password: "Invalid credentials!" });
+        return;
+      }
+
+      // Store data in localStorage only if not already stored
+      const existingData = localStorage.getItem("userData");
+      if (!existingData || JSON.stringify(userData) !== existingData) {
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+
+      dispatch(addActivity("Admin logged in."));
+    } catch (error) {
+      console.log("error occurs while loggin", error);
     }
 
-    // Store data in localStorage only if not already stored
-    const existingData = localStorage.getItem("userData");
-    if (!existingData || JSON.stringify(userData) !== existingData) {
-      localStorage.setItem("userData", JSON.stringify(userData));
-    }
   };
 
   return (

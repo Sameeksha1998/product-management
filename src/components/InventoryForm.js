@@ -12,6 +12,7 @@ import {
     Box,
 } from "@mui/material";
 import { createProduct, modifyProduct } from "../redux/actions/productActions";
+import { addActivity } from "../redux/actions/authActions";
 
 const InventoryForm = ({ editingProduct, handleClose, open }) => {
     const isEdit = editingProduct && Object.keys(editingProduct).length > 0;
@@ -43,11 +44,11 @@ const InventoryForm = ({ editingProduct, handleClose, open }) => {
         }
     }, [editingProduct, isEdit]);
 
-    const validate = () => {debugger
+    const validate = () => {
         let newErrors = {};
         if (!product.name) newErrors.name = "Product name is required";
         if (!product.price || product.price <= 0) newErrors.price = "Price must be greater than 0";
-        if (product.stockQuantity < 0 )
+        if (product.stockQuantity < 0)
             newErrors.stockQuantity = "Stock quantity cannot be negative";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -64,17 +65,22 @@ const InventoryForm = ({ editingProduct, handleClose, open }) => {
         setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
     };
 
-    const handleSubmit = (e) => {debugger
-        e.preventDefault();
-        if (!validate()) return;
+    const handleSubmit = (e) => {
+        try {
+            e.preventDefault();
+            if (!validate()) return;
 
-        if (isEdit) {
-            dispatch(modifyProduct({ ...product }));
-        } else {
-            dispatch(createProduct({ ...product, id: Date.now().toString() }));
+            if (isEdit) {
+                dispatch(modifyProduct({ ...product }));
+            } else {
+                dispatch(createProduct({ ...product, id: Date.now().toString() }));
+            }
+            dispatch(addActivity(`Product added: ${product.name} (ID: ${product.id})`));
+        } catch (error) {
+            console.log("error occurs while product adding", error);
+        } finally {
+            handleClose();
         }
-
-        handleClose();
     };
 
     return (

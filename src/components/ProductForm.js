@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { TextField, Button, Grid, Paper, Dialog, DialogTitle, Divider } from "@mui/material";
 import { createProduct, modifyProduct } from "../redux/actions/productActions";
+import { addActivity } from "../redux/actions/authActions";
 
 const ProductForm = ({ editingProduct, handleClose, open, inventory = false }) => {
   const isEdit = editingProduct && Object.keys(editingProduct).length > 0;
@@ -25,13 +26,13 @@ const ProductForm = ({ editingProduct, handleClose, open, inventory = false }) =
     }
   }, [editingProduct, isEdit]);
 
-  const validate = () => {debugger
+  const validate = () => {
     let newErrors = {};
     if (!product.name) newErrors.name = "Product name is required";
     if (!product.price || product.price <= 0) newErrors.price = "Price must be greater than 0";
     if (!product.category) newErrors.category = "Category is required";
     if (!product.stockQuantity || product.stockQuantity < 0)
-    newErrors.stockQuantity = "Stock quantity cannot be negative";
+      newErrors.stockQuantity = "Stock quantity cannot be negative";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -45,18 +46,25 @@ const ProductForm = ({ editingProduct, handleClose, open, inventory = false }) =
   };
   const
     handleSubmit = (e) => {
-      e.preventDefault();
-      if (!validate()) return; // Stop submission if validation fails
-      // isEdit
-      if (isEdit && editingProduct) {
-        dispatch(modifyProduct({ ...product })); // Use modifyProduct action
-        // setEditingProduct(null);
-      } else {
-        dispatch(createProduct({ ...product, id: Date.now().toString() })); // Use modifyProduct action
-      }
+      try {
+        e.preventDefault();
+        if (!validate()) return; // Stop submission if validation fails
+        // isEdit
+        if (isEdit && editingProduct) {
+          dispatch(modifyProduct({ ...product })); // Use modifyProduct action
+          // setEditingProduct(null);
+        } else {
+          dispatch(createProduct({ ...product, id: Date.now().toString() })); // Use modifyProduct action
+        }
 
-      setProduct({ id: "", name: "", price: "", category: "", stockQuantity: "", description: "" });
-      handleClose();
+        setProduct({ id: "", name: "", price: "", category: "", stockQuantity: "", description: "" });
+        dispatch(addActivity(`Product added: ${product.name} (ID: ${product.id})`));
+      } catch (error) {
+
+        console.log("error occurs while product adding", error);
+      } finally {
+        handleClose();
+      }
     };
 
   return (

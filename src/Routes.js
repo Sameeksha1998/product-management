@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout"; // Import Layout
 import InventoryPage from "./components/InventoryPage";
 import useAuth from "./hooks/useAuth";
+import AdminActivity from "./components/Adminactivity";
 
 const AppRoutes = () => {
   const { isAuthenticated, role } = useAuth();
@@ -25,6 +26,8 @@ const AppRoutes = () => {
         <Route path="/admin-dashboard" element={<ProtectedRoute roleRequired="admin"><AdminDashboard /></ProtectedRoute>} />
         <Route path="/products" element={<ProductList />} />
         <Route path="/inventory" element={<ProtectedRoute roleRequired="admin"><InventoryPage /></ProtectedRoute>} />
+        <Route path="/ActivityLogs" element={<ProtectedRoute roleRequired="admin"><AdminActivity /></ProtectedRoute>} />
+
       </Route>
 
       {/* 404 Page */}
