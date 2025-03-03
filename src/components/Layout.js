@@ -7,7 +7,14 @@ const Layout = ({ role }) => {
   return (
     <>
       <Navbar role={role} />
-      <Box style={{ padding: "20px", marginLeft: "240px" }}> 
+      <Box
+        sx={{
+          padding: "20px",
+          marginLeft: { xs: "0px", md: "240px" }, // No margin on small screens, margin on larger screens
+          width: { xs: "100%", md: `calc(100% - 240px)` }, // Adjust width dynamically
+          transition: "margin 0.3s ease-in-out", // Smooth transition effect
+        }}
+      >
         {/* Adjust margin if using a sidebar */}
         <Outlet />
       </Box>
